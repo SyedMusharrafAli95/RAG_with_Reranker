@@ -1,8 +1,7 @@
 import bm25s
 import pandas as pd
 
-from src.conifgs.path_configs import DATA_DIR, BM25_INDEXES_DIR
-
+from src.conifgs.path_configs import BM25_INDEXES_DIR, DATA_DIR
 
 # LOADING THE CORPUS
 corpus = pd.read_parquet(DATA_DIR / "corpus.parquet")

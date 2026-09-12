@@ -1,25 +1,16 @@
-
-import os
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
-from src.conifgs.path_configs import CACHE_DIR, DATA_DIR, DENSE_INDEXES_DIR
+from tqdm import tqdm
+
 from src.conifgs.ai_configs import dense_retreiver_model
+from src.conifgs.path_configs import CACHE_DIR, DATA_DIR, DENSE_INDEXES_DIR
 
 DENSE_INDEXES_DIR.mkdir(parents=True, exist_ok=True)
 
-model = SentenceTransformer(dense_retreiver_model, cache_folder=CACHE_DIR, local_files_only=True, device="cuda")
-
-sentences = [
-    "The weather is lovely today.",
-    "It's so sunny outside!",
-    "He drove to the stadium."
-]
-embeddings = model.encode(sentences)
-
-similarities = model.similarity(embeddings, embeddings)
-print(similarities.shape)
+model = SentenceTransformer(
+    dense_retreiver_model, cache_folder=CACHE_DIR, local_files_only=True, device="cuda"
+)
 
 
 def embed_batch(texts: list[str]) -> np.ndarray:
