@@ -9,3 +9,6 @@ wheels/
 # Virtual environments
 .venv
 src/data/fiqa
+src/model/bm25_indexes
+src/model/dense_indexes
+src/model_cache
