@@ -1,0 +1,22 @@
+[project]
+name = "evaluation-harness"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Syed Musharraf Ali", email = "alisyedmusharraf1995@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "datasets>=5.0.1",
+    "dotenv>=0.9.9",
+    "ipykernel>=7.3.0",
+    "langfuse>=4.15.2",
+]
+
+[project.scripts]
+evaluation-harness = "evaluation_harness:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
