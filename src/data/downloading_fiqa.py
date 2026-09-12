@@ -1,7 +1,7 @@
 from datasets import load_dataset
 from pathlib import Path
+from src.conifgs.path_configs import DATA_DIR
 
-DATA_DIR = Path(__file__).parent / "fiqa"
 DATA_DIR.mkdir(exist_ok=True)
 
 # loading dataset
