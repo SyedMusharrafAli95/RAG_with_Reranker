@@ -3,43 +3,50 @@ import pandas as pd
 
 from src.conifgs.path_configs import BM25_INDEXES_DIR, DATA_DIR
 
-# LOADING THE CORPUS
-corpus = pd.read_parquet(DATA_DIR / "corpus.parquet")
-doc_ids = corpus["_id"].tolist()
-doc_texts = corpus["text"].tolist()
 
-print(f"Indexing {len(doc_texts)} documents with BM25...")
+class BM25Retriever:
+    def __init__(self, corpus, initialize_corpus=False) -> None:
+        self.doc_ids = corpus["_id"].tolist()
+        self.doc_texts = corpus["text"].tolist()
 
+        if initialize_corpus:
+            self._initialize_corpus()
+        self._initialize_inference()
 
-# indexing using bm25
-tokens = bm25s.tokenize(doc_texts, stopwords="en")
+    def _initialize_corpus(self) -> None:
 
-print(tokens.ids[:1])  # list[list[int]] -- one inner list per doc
-print(list(tokens.vocab.items())[:10])  # dict[str, int] -- token string -> integer ID
+        tokens = bm25s.tokenize(self.doc_texts, stopwords="en")
+        retriever = bm25s.BM25()  # method='lucene' by default
+        retriever.index(tokens)
 
-retriever = bm25s.BM25()  # method='lucene' by default
-retriever.index(tokens)
+        # Save the index plus the doc_ids in matching order, so we can map back later.
+        BM25_INDEXES_DIR.mkdir(parents=True, exist_ok=True)
+        retriever.save(str(BM25_INDEXES_DIR))
+        (BM25_INDEXES_DIR / "doc_ids.txt").write_text("\n".join(self.doc_ids))
 
+    def _initialize_inference(self) -> None:
 
-# Save the index plus the doc_ids in matching order, so we can map back later.
-BM25_INDEXES_DIR.mkdir(parents=True, exist_ok=True)
-retriever.save(str(BM25_INDEXES_DIR))
-(BM25_INDEXES_DIR / "doc_ids.txt").write_text("\n".join(doc_ids))
+        self._retriever = bm25s.BM25.load(str(BM25_INDEXES_DIR))
+        self._doc_ids = (BM25_INDEXES_DIR / "doc_ids.txt").read_text().splitlines()
 
-
-def search_bm25(query: str, k: int = 10) -> list[tuple[str, float]]:
-    """Return the top-k (doc_id, score) pairs for a query."""
-    query_tokens = bm25s.tokenize([query], stopwords="en")
-    indices, scores = retriever.retrieve(query_tokens, k=k)
-    # indices[0] is a numpy array of integer positions in doc_ids.
-    return [
-        (doc_ids[i], float(scores[0][j])) for j, i in enumerate(indices[0].tolist())
-    ]
+    def search(self, query: str, k: int = 10) -> list[tuple[str, float]]:
+        tokens = bm25s.tokenize([query], stopwords="en")
+        indices, scores = self._retriever.retrieve(tokens, k=k)
+        return [
+            (self._doc_ids[i], float(scores[0][j]))
+            for j, i in enumerate(indices[0].tolist())
+        ]
 
 
 if __name__ == "__main__":
+    # LOADING THE CORPUS
+    corpus = pd.read_parquet(DATA_DIR / "corpus.parquet")
+    # doc_ids = corpus["_id"].tolist()
+    # doc_texts = corpus["text"].tolist()
+
+    bm25_retriever = BM25Retriever(corpus=corpus, initialize_corpus=False)
+
     query = "Where should I park my rainy-day fund?"
     print(f"\nQuery: {query}\n")
-    for i, (doc_id, score) in enumerate(search_bm25(query, k=5), 1):
-        text = corpus.loc[corpus["_id"] == doc_id, "text"].iloc[0]
-        print(f"{i}. [{score:6.2f}] {doc_id}  {text[:80]}")
+
+    print(bm25_retriever.search(query))
