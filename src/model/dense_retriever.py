@@ -1,20 +1,17 @@
 import numpy as np
-import pandas as pd
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
 from src.conifgs.ai_configs import dense_retreiver_model
-from src.conifgs.path_configs import CACHE_DIR, DATA_DIR, DENSE_INDEXES_DIR
+from src.conifgs.path_configs import CACHE_DIR, DENSE_INDEXES_DIR
+from src.utils.corpus import load_corpus
 
 DENSE_INDEXES_DIR.mkdir(parents=True, exist_ok=True)
 
 model = SentenceTransformer(
-    dense_retreiver_model, cache_folder=CACHE_DIR, local_files_only=True, device="cuda"
+    dense_retreiver_model, cache_folder=CACHE_DIR, device="cuda"
 )
 
-
-def load_corpus() -> pd.DataFrame:
-    return pd.read_parquet(DATA_DIR / "corpus.parquet")
 
 
 class DenseRetriever:

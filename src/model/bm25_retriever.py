@@ -1,11 +1,12 @@
 import bm25s
-import pandas as pd
 
-from src.conifgs.path_configs import BM25_INDEXES_DIR, DATA_DIR
+from src.conifgs.path_configs import BM25_INDEXES_DIR
+from src.utils.corpus import load_corpus
 
 
 class BM25Retriever:
-    def __init__(self, corpus, initialize_corpus=False) -> None:
+    def __init__(self, initialize_corpus=False) -> None:
+        corpus = load_corpus()
         self.doc_ids = corpus["_id"].tolist()
         self.doc_texts = corpus["text"].tolist()
 
@@ -40,11 +41,7 @@ class BM25Retriever:
 
 if __name__ == "__main__":
     # LOADING THE CORPUS
-    corpus = pd.read_parquet(DATA_DIR / "corpus.parquet")
-    # doc_ids = corpus["_id"].tolist()
-    # doc_texts = corpus["text"].tolist()
-
-    bm25_retriever = BM25Retriever(corpus=corpus, initialize_corpus=False)
+    bm25_retriever = BM25Retriever(initialize_corpus=False)
 
     query = "Where should I park my rainy-day fund?"
     print(f"\nQuery: {query}\n")
